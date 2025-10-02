@@ -1,3 +1,5 @@
+// Presentation Layer - Handles all user interface and console I/O
+
 const promptSync = require('prompt-sync')()
 const business = require('./business')
 
