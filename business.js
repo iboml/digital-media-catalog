@@ -1,7 +1,6 @@
 // Business Logic Layer - Handles authentication and business rules
 
 const persistence = require('./persistence')
-const persistence = require('./persistence')
 
 /**
  * Authenticates a user with username and password
