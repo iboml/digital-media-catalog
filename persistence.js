@@ -1,3 +1,4 @@
+// Persistence Layer - Handles all file I/O operations
 const fs = require('fs/promises')
 
 /**
