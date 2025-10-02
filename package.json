@@ -1,0 +1,16 @@
+{
+  "name": "digital-media-catalog",
+  "version": "2.0.0",
+  "description": "Digital Media Catalog with 3-tier architecture and user authentication",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "keywords": ["photos", "catalog", "media"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "prompt-sync": "^4.2.0"
+  }
+}
