@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit {{photo.title}} - Digital Media Catalog</title>
+</head>
+<body>
+    <h1>Edit Photo</h1>
+    
+    <form method="POST" action="/photo/{{photo.id}}/update">
+        <p>
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title" value="{{photo.title}}" size="50">
+        </p>
+        
+        <p>
+            <label for="description">Description:</label><br>
+            <textarea id="description" name="description" rows="4" cols="50">{{photo.description}}</textarea>
+        </p>
+        
+        <p>
+            <button type="submit">Submit</button>
+        </p>
+    </form>
+    
+    <p><a href="/photo/{{photo.id}}">Cancel</a></p>
+</body>
+</html>

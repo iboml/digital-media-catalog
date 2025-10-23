@@ -1,16 +1,24 @@
 {
   "name": "digital-media-catalog",
-  "version": "2.0.0",
-  "description": "Digital Media Catalog with 3-tier architecture and user authentication",
+  "version": "3.0.0",
+  "description": "Digital Media Catalog with MongoDB and Express Web Interface",
   "type": "commonjs",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"
   },
-  "keywords": ["photos", "catalog", "media"],
+  "keywords": [
+    "photos",
+    "catalog",
+    "media",
+    "mongodb",
+    "express"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "prompt-sync": "^4.2.0"
+    "express": "^4.18.2",
+    "express-handlebars": "^7.1.2",
+    "mongodb": "^6.3.0"
   }
 }

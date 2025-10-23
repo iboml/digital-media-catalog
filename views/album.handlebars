@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{album.name}} ({{album.photoCount}})</title>
+</head>
+<body>
+    <h1>{{album.name}}</h1>
+    <p>{{album.description}}</p>
+    
+    <p>This album has {{album.photoCount}} {{photoWord}}.</p>
+    
+    <h2>Photos</h2>
+    <ul>
+        {{#each album.photos}}
+        <li>
+            <a href="/photo/{{this.id}}">{{this.title}}</a>
+        </li>
+        {{/each}}
+    </ul>
+    
+    <p><a href="/">Back to Albums</a></p>
+</body>
+</html>

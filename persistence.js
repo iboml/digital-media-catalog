@@ -1,55 +1,72 @@
-// Persistence Layer - Handles all file I/O operations
-const fs = require('fs/promises')
+// Persistence Layer - MongoDB Database Operations
+const { MongoClient, ObjectId } = require('mongodb');
+
+// MongoDB connection string - REPLACE with your actual connection string
+const MONGODB_URI = 'mongodb+srv://webstudent:UDSTstudent@cluster0.yrtvuxn.mongodb.net/';
+const DATABASE_NAME = 'infs3201_fall2025';
+
+let db = null;
 
 /**
- * Loads photos data from the JSON file
- * @returns {Promise<Array>} Array of photo objects
+ * Connects to MongoDB and initializes the database connection
+ * @returns {Promise<void>}
  */
-async function loadPhotos() {
+async function connectDB() {
+    if (db) {
+        return; // Already connected
+    }
+    
     try {
-        const data = await fs.readFile('photos.json', 'utf8')
-        return JSON.parse(data)
+        const client = new MongoClient(MONGODB_URI);
+        await client.connect();
+        db = client.db(DATABASE_NAME);
+        console.log('Connected to MongoDB successfully');
     } catch (error) {
-        throw new Error('Error loading photos: ' + error.message)
+        throw new Error('Error connecting to MongoDB: ' + error.message);
     }
 }
 
 /**
- * Loads albums data from the JSON file
+ * Gets all albums from the database
  * @returns {Promise<Array>} Array of album objects
  */
 async function loadAlbums() {
+    await connectDB();
     try {
-        const data = await fs.readFile('albums.json', 'utf8')
-        return JSON.parse(data)
+        const albums = await db.collection('albums').find({}).toArray();
+        return albums;
     } catch (error) {
-        throw new Error('Error loading albums: ' + error.message)
+        throw new Error('Error loading albums: ' + error.message);
     }
 }
 
 /**
- * Loads users data from the JSON file
- * @returns {Promise<Array>} Array of user objects
+ * Finds an album by its ID
+ * @param {number} albumId - ID of the album to find
+ * @returns {Promise<Object|null>} Album object or null if not found
  */
-async function loadUsers() {
+async function findAlbumById(albumId) {
+    await connectDB();
     try {
-        const data = await fs.readFile('users.json', 'utf8')
-        return JSON.parse(data)
+        const album = await db.collection('albums').findOne({ id: albumId });
+        return album;
     } catch (error) {
-        throw new Error('Error loading users: ' + error.message)
+        throw new Error('Error finding album: ' + error.message);
     }
 }
 
 /**
- * Saves photos data to the JSON file
- * @param {Array} photos - Array of photo objects to save
- * @returns {Promise<void>}
+ * Gets all photos that belong to a specific album
+ * @param {number} albumId - ID of the album
+ * @returns {Promise<Array>} Array of photos in the album
  */
-async function savePhotos(photos) {
+async function getPhotosByAlbum(albumId) {
+    await connectDB();
     try {
-        await fs.writeFile('photos.json', JSON.stringify(photos, null, 2))
+        const photos = await db.collection('photos').find({ albums: albumId }).toArray();
+        return photos;
     } catch (error) {
-        throw new Error('Error saving photos: ' + error.message)
+        throw new Error('Error loading photos: ' + error.message);
     }
 }
 
@@ -59,78 +76,13 @@ async function savePhotos(photos) {
  * @returns {Promise<Object|null>} Photo object or null if not found
  */
 async function findPhotoById(photoId) {
-    const photos = await loadPhotos()
-    for (let i = 0; i < photos.length; i++) {
-        if (photos[i].id === photoId) {
-            return photos[i]
-        }
+    await connectDB();
+    try {
+        const photo = await db.collection('photos').findOne({ id: photoId });
+        return photo;
+    } catch (error) {
+        throw new Error('Error finding photo: ' + error.message);
     }
-    return null
-}
-
-/**
- * Finds an album by its ID
- * @param {number} albumId - ID of the album to find
- * @returns {Promise<Object|null>} Album object or null if not found
- */
-async function findAlbumById(albumId) {
-    const albums = await loadAlbums()
-    for (let i = 0; i < albums.length; i++) {
-        if (albums[i].id === albumId) {
-            return albums[i]
-        }
-    }
-    return null
-}
-
-/**
- * Finds an album by name (case insensitive)
- * @param {string} albumName - Name of the album to find
- * @returns {Promise<Object|null>} Album object or null if not found
- */
-async function findAlbumByName(albumName) {
-    const albums = await loadAlbums()
-    const lowerCaseName = albumName.toLowerCase()
-    for (let i = 0; i < albums.length; i++) {
-        if (albums[i].name.toLowerCase() === lowerCaseName) {
-            return albums[i]
-        }
-    }
-    return null
-}
-
-/**
- * Finds a user by username
- * @param {string} username - Username to search for
- * @returns {Promise<Object|null>} User object or null if not found
- */
-async function findUserByUsername(username) {
-    const users = await loadUsers()
-    for (let i = 0; i < users.length; i++) {
-        if (users[i].username === username) {
-            return users[i]
-        }
-    }
-    return null
-}
-
-/**
- * Gets all photos that belong to a specific album
- * @param {number} albumId - ID of the album
- * @returns {Promise<Array>} Array of photos in the album
- */
-async function getPhotosByAlbum(albumId) {
-    const photos = await loadPhotos()
-    const albumPhotos = []
-    for (let i = 0; i < photos.length; i++) {
-        for (let j = 0; j < photos[i].albums.length; j++) {
-            if (photos[i].albums[j] === albumId) {
-                albumPhotos.push(photos[i])
-                break
-            }
-        }
-    }
-    return albumPhotos
 }
 
 /**
@@ -140,41 +92,40 @@ async function getPhotosByAlbum(albumId) {
  * @returns {Promise<boolean>} True if update was successful, false otherwise
  */
 async function updatePhoto(photoId, updates) {
-    const photos = await loadPhotos()
-    let found = false
-    
-    for (let i = 0; i < photos.length; i++) {
-        if (photos[i].id === photoId) {
-            if (updates.title !== undefined) {
-                photos[i].title = updates.title
-            }
-            if (updates.description !== undefined) {
-                photos[i].description = updates.description
-            }
-            if (updates.tags !== undefined) {
-                photos[i].tags = updates.tags
-            }
-            found = true
-            break
+    await connectDB();
+    try {
+        const updateFields = {};
+        
+        if (updates.title !== undefined) {
+            updateFields.title = updates.title;
         }
+        if (updates.description !== undefined) {
+            updateFields.description = updates.description;
+        }
+        
+        // If no fields to update, consider it successful
+        if (Object.keys(updateFields).length === 0) {
+            return true;
+        }
+        
+        const result = await db.collection('photos').updateOne(
+            { id: photoId },
+            { $set: updateFields }
+        );
+        
+        // Success if the photo was found (even if values didn't change)
+        return result.matchedCount > 0;
+    } catch (error) {
+        throw new Error('Error updating photo: ' + error.message);
     }
-    
-    if (found) {
-        await savePhotos(photos)
-    }
-    
-    return found
 }
 
 module.exports = {
-    loadPhotos,
+    connectDB,
     loadAlbums,
-    loadUsers,
-    savePhotos,
-    findPhotoById,
     findAlbumById,
-    findAlbumByName,
-    findUserByUsername,
     getPhotosByAlbum,
+    findPhotoById,
     updatePhoto
-}
+};
+
