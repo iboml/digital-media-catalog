@@ -102,6 +102,9 @@ async function updatePhoto(photoId, updates) {
         if (updates.description !== undefined) {
             updateFields.description = updates.description;
         }
+        if (updates.visibility !== undefined) {
+            updateFields.visibility = updates.visibility;
+        }
         
         // If no fields to update, consider it successful
         if (Object.keys(updateFields).length === 0) {
@@ -120,12 +123,120 @@ async function updatePhoto(photoId, updates) {
     }
 }
 
+// ==================== USER OPERATIONS ====================
+
+/**
+ * Creates a new user in the database
+ * @param {Object} userData - User data {name, email, password}
+ * @returns {Promise<Object>} Created user object with id
+ */
+async function createUser(userData) {
+    await connectDB();
+    try {
+        // Get the next user ID
+        const lastUser = await db.collection('users').find({}).sort({ id: -1 }).limit(1).toArray();
+        const nextId = lastUser.length > 0 ? lastUser[0].id + 1 : 1;
+        
+        const user = {
+            id: nextId,
+            name: userData.name,
+            email: userData.email,
+            password: userData.password,
+            createdAt: new Date()
+        };
+        
+        await db.collection('users').insertOne(user);
+        return user;
+    } catch (error) {
+        throw new Error('Error creating user: ' + error.message);
+    }
+}
+
+/**
+ * Finds a user by email
+ * @param {string} email - User email
+ * @returns {Promise<Object|null>} User object or null if not found
+ */
+async function findUserByEmail(email) {
+    await connectDB();
+    try {
+        const user = await db.collection('users').findOne({ email: email });
+        return user;
+    } catch (error) {
+        throw new Error('Error finding user: ' + error.message);
+    }
+}
+
+/**
+ * Finds a user by ID
+ * @param {number} userId - User ID
+ * @returns {Promise<Object|null>} User object or null if not found
+ */
+async function findUserById(userId) {
+    await connectDB();
+    try {
+        const user = await db.collection('users').findOne({ id: userId });
+        return user;
+    } catch (error) {
+        throw new Error('Error finding user: ' + error.message);
+    }
+}
+
+// ==================== COMMENT OPERATIONS ====================
+
+/**
+ * Creates a new comment on a photo
+ * @param {Object} commentData - Comment data {photoId, userId, username, text}
+ * @returns {Promise<Object>} Created comment object with id
+ */
+async function createComment(commentData) {
+    await connectDB();
+    try {
+        // Get the next comment ID
+        const lastComment = await db.collection('comments').find({}).sort({ id: -1 }).limit(1).toArray();
+        const nextId = lastComment.length > 0 ? lastComment[0].id + 1 : 1;
+        
+        const comment = {
+            id: nextId,
+            photoId: commentData.photoId,
+            userId: commentData.userId,
+            username: commentData.username,
+            text: commentData.text,
+            createdAt: new Date()
+        };
+        
+        await db.collection('comments').insertOne(comment);
+        return comment;
+    } catch (error) {
+        throw new Error('Error creating comment: ' + error.message);
+    }
+}
+
+/**
+ * Gets all comments for a specific photo
+ * @param {number} photoId - ID of the photo
+ * @returns {Promise<Array>} Array of comments
+ */
+async function getCommentsByPhotoId(photoId) {
+    await connectDB();
+    try {
+        const comments = await db.collection('comments').find({ photoId: photoId }).sort({ createdAt: 1 }).toArray();
+        return comments;
+    } catch (error) {
+        throw new Error('Error loading comments: ' + error.message);
+    }
+}
+
 module.exports = {
     connectDB,
     loadAlbums,
     findAlbumById,
     getPhotosByAlbum,
     findPhotoById,
-    updatePhoto
+    updatePhoto,
+    createUser,
+    findUserByEmail,
+    findUserById,
+    createComment,
+    getCommentsByPhotoId
 };
-
