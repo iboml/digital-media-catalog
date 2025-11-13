@@ -6,6 +6,10 @@
     <title>{{album.name}} ({{album.photoCount}})</title>
 </head>
 <body>
+    <div style="text-align: right; padding: 10px;">
+        Welcome, {{user.name}}! | <a href="/logout">Logout</a>
+    </div>
+    
     <h1>{{album.name}}</h1>
     <p>{{album.description}}</p>
     
@@ -16,6 +20,9 @@
         {{#each album.photos}}
         <li>
             <a href="/photo/{{this.id}}">{{this.title}}</a>
+            {{#if this.visibility}}
+            <em>({{this.visibility}})</em>
+            {{/if}}
         </li>
         {{/each}}
     </ul>

@@ -6,6 +6,10 @@
     <title>Edit {{photo.title}} - Digital Media Catalog</title>
 </head>
 <body>
+    <div style="text-align: right; padding: 10px;">
+        Welcome, {{user.name}}! | <a href="/logout">Logout</a>
+    </div>
+    
     <h1>Edit Photo</h1>
     
     <form method="POST" action="/photo/{{photo.id}}/update">
@@ -17,6 +21,14 @@
         <p>
             <label for="description">Description:</label><br>
             <textarea id="description" name="description" rows="4" cols="50">{{photo.description}}</textarea>
+        </p>
+        
+        <p>
+            <label for="visibility">Visibility:</label><br>
+            <select id="visibility" name="visibility">
+                <option value="public" {{#if (eq photo.visibility "public")}}selected{{/if}}>Public</option>
+                <option value="private" {{#if (eq photo.visibility "private")}}selected{{/if}}>Private</option>
+            </select>
         </p>
         
         <p>

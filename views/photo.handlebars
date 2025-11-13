@@ -6,6 +6,10 @@
     <title>{{photo.title}} - Digital Media Catalog</title>
 </head>
 <body>
+    <div style="text-align: right; padding: 10px;">
+        Welcome, {{user.name}}! | <a href="/logout">Logout</a>
+    </div>
+    
     <h1>{{photo.title}}</h1>
     
     <img src="/photos/{{photo.filename}}" alt="{{photo.title}}" style="max-width: 300px;">
@@ -13,7 +17,39 @@
     <h2>Description</h2>
     <p>{{photo.description}}</p>
     
+    <p><strong>Visibility:</strong> {{photo.visibility}}</p>
+    
+    {{#if canEdit}}
     <p><a href="/photo/{{photo.id}}/edit">Edit</a></p>
+    {{/if}}
+    
+    <hr>
+    
+    <h2>Comments</h2>
+    
+    {{#if comments.length}}
+    <ul>
+        {{#each comments}}
+        <li>
+            <strong>{{this.username}}</strong> said:<br>
+            {{this.text}}
+            <br><small>{{this.createdAt}}</small>
+        </li>
+        {{/each}}
+    </ul>
+    {{else}}
+    <p>No comments yet. Be the first to comment!</p>
+    {{/if}}
+    
+    <h3>Add a Comment</h3>
+    <form method="POST" action="/photo/{{photo.id}}/comment">
+        <p>
+            <textarea name="comment" rows="4" cols="50" placeholder="Write your comment here..." required></textarea>
+        </p>
+        <p>
+            <button type="submit">Post Comment</button>
+        </p>
+    </form>
     
     <p><a href="/">Back to Albums</a></p>
 </body>
