@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Photo - {{album.name}}</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <a href="/" class="logo">📷 Media Catalog</a>
+                <nav class="nav-links">
+                    <a href="/">Albums</a>
+                    <a href="/search">Search</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <span class="user-info">Welcome, {{user.name}}!</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </header>
+        
+        <div class="card" style="max-width: 600px; margin: 0 auto;">
+            <a href="/album/{{album.id}}" class="back-link">← Back to {{album.name}}</a>
+            
+            <h1>Upload Photo</h1>
+            <p style="color: #666; margin-bottom: 30px;">Add a new photo to <strong>{{album.name}}</strong></p>
+            
+            <form method="POST" action="/album/{{album.id}}/upload" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="photo">Select Photo</label>
+                    <input type="file" id="photo" name="photo" accept="image/*" required>
+                    <p style="color: #888; font-size: 0.9em; margin-top: 8px;">
+                        Supported formats: JPEG, PNG, GIF, WebP
+                    </p>
+                </div>
+                
+                <div style="background: #f9f9f9; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                    <h3 style="margin-top: 0; color: #555;">Note</h3>
+                    <p style="color: #666; margin: 0;">
+                        Newly uploaded photos will be set as <strong>private</strong> by default. 
+                        You can edit the title, description, and visibility after uploading.
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <button type="submit" class="btn btn-success">Upload Photo</button>
+                    <a href="/album/{{album.id}}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,6 +2,7 @@
 
 const persistence = require('./persistence');
 const bcrypt = require('bcrypt');
+const email = require('./email');
 
 const SALT_ROUNDS = 10;
 
@@ -76,6 +77,15 @@ async function getAllAlbums() {
 }
 
 /**
+ * Gets an album by ID
+ * @param {number} albumId - ID of the album
+ * @returns {Promise<Object|null>} Album object or null if not found
+ */
+async function getAlbumById(albumId) {
+    return await persistence.findAlbumById(albumId);
+}
+
+/**
  * Gets album details with photo count
  * @param {number} albumId - ID of the album
  * @returns {Promise<Object|null>} Album object with photos array or null if not found
@@ -121,14 +131,14 @@ function formatDate(dateInput) {
  * @param {string} password - User's password (plain text)
  * @returns {Promise<Object>} Result with success status and message/user
  */
-async function registerUser(name, email, password) {
+async function registerUser(name, userEmail, password) {
     // Validate inputs
-    if (!name || !email || !password) {
+    if (!name || !userEmail || !password) {
         return { success: false, message: 'All fields are required' };
     }
     
     // Check if email already exists
-    const existingUser = await persistence.findUserByEmail(email);
+    const existingUser = await persistence.findUserByEmail(userEmail);
     if (existingUser) {
         return { success: false, message: 'Email already registered' };
     }
@@ -139,7 +149,7 @@ async function registerUser(name, email, password) {
     // Create user
     const user = await persistence.createUser({
         name: name,
-        email: email,
+        email: userEmail,
         password: hashedPassword
     });
     
@@ -160,14 +170,14 @@ async function registerUser(name, email, password) {
  * @param {string} password - User's password (plain text)
  * @returns {Promise<Object>} Result with success status and message/user
  */
-async function loginUser(email, password) {
+async function loginUser(userEmail, password) {
     // Validate inputs
-    if (!email || !password) {
+    if (!userEmail || !password) {
         return { success: false, message: 'Email and password are required' };
     }
     
     // Find user by email
-    const user = await persistence.findUserByEmail(email);
+    const user = await persistence.findUserByEmail(userEmail);
     if (!user) {
         return { success: false, message: 'Invalid email or password' };
     }
@@ -304,6 +314,22 @@ async function addComment(photoId, userId, username, commentText) {
         text: commentText.trim()
     });
     
+    // Send email notification to photo owner
+    if (photo.owner !== userId) {
+        // Get photo owner details
+        const owner = await persistence.findUserById(photo.owner);
+        if (owner && owner.email) {
+            const subject = 'New comment on your photo: ' + (photo.title || 'Untitled');
+            const body = 'Hello ' + owner.name + ',\n\n' +
+                username + ' commented on your photo "' + (photo.title || 'Untitled') + '":\n\n' +
+                '"' + commentText.trim() + '"\n\n' +
+                'View your photo to see all comments.\n\n' +
+                'Best regards,\nDigital Media Catalog';
+            
+            email.sendMail(owner.email, subject, body);
+        }
+    }
+    
     return {
         success: true,
         message: 'Comment added successfully',
@@ -320,10 +346,73 @@ async function getPhotoComments(photoId) {
     return await persistence.getCommentsByPhotoId(photoId);
 }
 
+// ==================== PHOTO UPLOAD ====================
+
+/**
+ * Uploads a new photo to an album
+ * @param {number} albumId - ID of the album to add photo to
+ * @param {number} userId - ID of the user uploading
+ * @param {string} filename - Filename of the uploaded file
+ * @returns {Promise<Object>} Result with success status and message
+ */
+async function uploadPhoto(albumId, userId, filename) {
+    // Check if album exists
+    const album = await persistence.findAlbumById(albumId);
+    if (!album) {
+        return { success: false, message: 'Album not found' };
+    }
+    
+    // Create photo with default values
+    const photoData = {
+        filename: filename,
+        title: '',
+        description: '',
+        tags: [],
+        albums: [albumId],
+        visibility: 'private',
+        owner: userId,
+        date: new Date().toISOString()
+    };
+    
+    const photo = await persistence.createPhoto(photoData);
+    
+    if (photo) {
+        return { success: true, message: 'Photo uploaded successfully', photo: photo };
+    } else {
+        return { success: false, message: 'Failed to upload photo' };
+    }
+}
+
+// ==================== SEARCH ====================
+
+/**
+ * Searches photos by tags, title, and description
+ * @param {string} query - Search query
+ * @param {number} userId - ID of the current user
+ * @returns {Promise<Array>} Array of matching photos
+ */
+async function searchPhotos(query, userId) {
+    // Get all photos that match the search query
+    const allPhotos = await persistence.searchPhotos(query);
+    
+    // Filter to only show photos the user can view
+    const visiblePhotos = [];
+    
+    for (let i = 0; i < allPhotos.length; i++) {
+        const photo = allPhotos[i];
+        if (canViewPhoto(photo, userId)) {
+            visiblePhotos.push(photo);
+        }
+    }
+    
+    return visiblePhotos;
+}
+
 module.exports = {
     getPhotoDetails,
     updatePhotoDetails,
     getAllAlbums,
+    getAlbumById,
     getAlbumDetails,
     formatDate,
     registerUser,
@@ -332,6 +421,7 @@ module.exports = {
     canEditPhoto,
     updatePhotoWithVisibility,
     addComment,
-    getPhotoComments
+    getPhotoComments,
+    uploadPhoto,
+    searchPhotos
 };
-

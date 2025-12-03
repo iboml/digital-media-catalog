@@ -2,10 +2,37 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
 const session = require('express-session');
+const multer = require('multer');
+const path = require('path');
 const business = require('./business');
 
 const app = express();
 const PORT = 8000;
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/photos/');
+    },
+    filename: function (req, file, cb) {
+        // Create unique filename with timestamp
+        const uniqueName = Date.now() + '-' + file.originalname;
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    fileFilter: function (req, file, cb) {
+        // Accept only image files
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (allowedTypes.indexOf(file.mimetype) !== -1) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'));
+        }
+    }
+});
 
 // Configure Handlebars with helpers
 app.engine('handlebars', exphbs.engine({ 
@@ -140,7 +167,7 @@ app.get('/', requireAuth, async (req, res) => {
 });
 
 /**
- * Album Details Page - Show photos in an album (requires authentication)
+ * Album Details Page - Show photos in an album as gallery (requires authentication)
  * GET /album/:albumId
  */
 app.get('/album/:albumId', requireAuth, async (req, res) => {
@@ -322,6 +349,97 @@ app.post('/photo/:photoId/comment', requireAuth, async (req, res) => {
         }
     } catch (error) {
         res.status(500).send('Error adding comment: ' + error.message + '<br><br><a href="javascript:history.back()">Go Back</a>');
+    }
+});
+
+// ==================== PHOTO UPLOAD ROUTES ====================
+
+/**
+ * Upload Photo Page - Show upload form (requires authentication)
+ * GET /album/:albumId/upload
+ */
+app.get('/album/:albumId/upload', requireAuth, async (req, res) => {
+    try {
+        const albumId = parseInt(req.params.albumId);
+        
+        if (isNaN(albumId)) {
+            return res.status(400).send('Invalid album ID');
+        }
+        
+        const album = await business.getAlbumById(albumId);
+        
+        if (!album) {
+            return res.status(404).send('Album not found');
+        }
+        
+        res.render('upload', { 
+            layout: undefined, 
+            album: album,
+            user: req.session.user
+        });
+    } catch (error) {
+        res.status(500).send('Error loading upload page: ' + error.message);
+    }
+});
+
+/**
+ * Upload Photo - Process file upload (requires authentication)
+ * POST /album/:albumId/upload
+ */
+app.post('/album/:albumId/upload', requireAuth, upload.single('photo'), async (req, res) => {
+    try {
+        const albumId = parseInt(req.params.albumId);
+        
+        if (isNaN(albumId)) {
+            return res.status(400).send('Invalid album ID');
+        }
+        
+        if (!req.file) {
+            return res.status(400).send('No file uploaded. <a href="javascript:history.back()">Go Back</a>');
+        }
+        
+        const userId = req.session.user.id;
+        const filename = req.file.filename;
+        
+        const result = await business.uploadPhoto(albumId, userId, filename);
+        
+        if (result.success) {
+            res.redirect('/album/' + albumId);
+        } else {
+            res.status(500).send(result.message + '<br><br><a href="javascript:history.back()">Go Back</a>');
+        }
+    } catch (error) {
+        res.status(500).send('Error uploading photo: ' + error.message + '<br><br><a href="javascript:history.back()">Go Back</a>');
+    }
+});
+
+// ==================== SEARCH ROUTES ====================
+
+/**
+ * Search Page - Show search form and results (requires authentication)
+ * GET /search
+ */
+app.get('/search', requireAuth, async (req, res) => {
+    try {
+        const query = req.query.q || '';
+        const userId = req.session.user.id;
+        
+        let results = [];
+        
+        if (query.trim() !== '') {
+            results = await business.searchPhotos(query, userId);
+        }
+        
+        res.render('search', { 
+            layout: undefined, 
+            query: query,
+            results: results,
+            hasResults: results.length > 0,
+            searched: query.trim() !== '',
+            user: req.session.user
+        });
+    } catch (error) {
+        res.status(500).send('Error searching photos: ' + error.message);
     }
 });
 

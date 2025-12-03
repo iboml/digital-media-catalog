@@ -227,6 +227,89 @@ async function getCommentsByPhotoId(photoId) {
     }
 }
 
+// ==================== PHOTO OPERATIONS ====================
+
+/**
+ * Creates a new photo in the database
+ * @param {Object} photoData - Photo data {filename, title, description, tags, albums, visibility, owner, date}
+ * @returns {Promise<Object>} Created photo object with id
+ */
+async function createPhoto(photoData) {
+    await connectDB();
+    try {
+        // Get the next photo ID
+        const lastPhoto = await db.collection('photos').find({}).sort({ id: -1 }).limit(1).toArray();
+        const nextId = lastPhoto.length > 0 ? lastPhoto[0].id + 1 : 1;
+        
+        const photo = {
+            id: nextId,
+            filename: photoData.filename,
+            title: photoData.title || '',
+            description: photoData.description || '',
+            tags: photoData.tags || [],
+            albums: photoData.albums || [],
+            visibility: photoData.visibility || 'private',
+            owner: photoData.owner,
+            date: photoData.date || new Date().toISOString()
+        };
+        
+        await db.collection('photos').insertOne(photo);
+        return photo;
+    } catch (error) {
+        throw new Error('Error creating photo: ' + error.message);
+    }
+}
+
+/**
+ * Searches photos by title, description, and tags
+ * @param {string} query - Search query
+ * @returns {Promise<Array>} Array of matching photos
+ */
+async function searchPhotos(query) {
+    await connectDB();
+    try {
+        // Convert query to lowercase for case-insensitive search
+        const searchTerm = query.toLowerCase();
+        
+        // Get all photos and filter manually (avoiding .filter() method)
+        const allPhotos = await db.collection('photos').find({}).toArray();
+        const results = [];
+        
+        for (let i = 0; i < allPhotos.length; i++) {
+            const photo = allPhotos[i];
+            let matches = false;
+            
+            // Check title
+            if (photo.title && photo.title.toLowerCase().indexOf(searchTerm) !== -1) {
+                matches = true;
+            }
+            
+            // Check description
+            if (photo.description && photo.description.toLowerCase().indexOf(searchTerm) !== -1) {
+                matches = true;
+            }
+            
+            // Check tags
+            if (photo.tags && photo.tags.length > 0) {
+                for (let j = 0; j < photo.tags.length; j++) {
+                    if (photo.tags[j].toLowerCase().indexOf(searchTerm) !== -1) {
+                        matches = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (matches) {
+                results.push(photo);
+            }
+        }
+        
+        return results;
+    } catch (error) {
+        throw new Error('Error searching photos: ' + error.message);
+    }
+}
+
 module.exports = {
     connectDB,
     loadAlbums,
@@ -238,5 +321,7 @@ module.exports = {
     findUserByEmail,
     findUserById,
     createComment,
-    getCommentsByPhotoId
+    getCommentsByPhotoId,
+    createPhoto,
+    searchPhotos
 };
