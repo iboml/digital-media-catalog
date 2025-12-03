@@ -3,30 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{album.name}} ({{album.photoCount}})</title>
+    <title>{{album.name}} - Digital Media Catalog</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div style="text-align: right; padding: 10px;">
-        Welcome, {{user.name}}! | <a href="/logout">Logout</a>
-    </div>
-    
-    <h1>{{album.name}}</h1>
-    <p>{{album.description}}</p>
-    
-    <p>This album has {{album.photoCount}} {{photoWord}}.</p>
-    
-    <h2>Photos</h2>
-    <ul>
-        {{#each album.photos}}
-        <li>
-            <a href="/photo/{{this.id}}">{{this.title}}</a>
-            {{#if this.visibility}}
-            <em>({{this.visibility}})</em>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <a href="/" class="logo">📷 Media Catalog</a>
+                <nav class="nav-links">
+                    <a href="/">Albums</a>
+                    <a href="/search">Search</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <span class="user-info">Welcome, {{user.name}}!</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </header>
+        
+        <div class="card">
+            <a href="/" class="back-link">← Back to Albums</a>
+            
+            <div class="album-header">
+                <div class="album-info">
+                    <h1>{{album.name}}</h1>
+                    {{#if album.description}}
+                    <p>{{album.description}}</p>
+                    {{/if}}
+                    <p style="margin-top: 10px; color: #888;">{{album.photoCount}} {{photoWord}} in this album</p>
+                </div>
+                <div class="album-actions">
+                    <a href="/album/{{album.id}}/upload" class="btn btn-success">+ Upload Photo</a>
+                </div>
+            </div>
+            
+            {{#if album.photos.length}}
+            <ul class="photo-gallery">
+                {{#each album.photos}}
+                <li class="photo-item">
+                    <a href="/photo/{{this.id}}">
+                        <img src="/photos/{{this.filename}}" alt="{{this.title}}" style="max-width: 200px; max-height: 200px;">
+                        {{#if this.title}}
+                        <span class="photo-title">{{this.title}}</span>
+                        {{/if}}
+                        <span class="photo-visibility {{this.visibility}}">{{this.visibility}}</span>
+                    </a>
+                </li>
+                {{/each}}
+            </ul>
+            {{else}}
+            <p style="text-align: center; color: #888; padding: 60px 20px;">
+                No photos in this album yet.<br>
+                <a href="/album/{{album.id}}/upload" style="color: #667eea; font-weight: 600;">Upload your first photo!</a>
+            </p>
             {{/if}}
-        </li>
-        {{/each}}
-    </ul>
-    
-    <p><a href="/">Back to Albums</a></p>
+        </div>
+    </div>
 </body>
 </html>
