@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Photos - Digital Media Catalog</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <a href="/" class="logo">📷 Media Catalog</a>
+                <nav class="nav-links">
+                    <a href="/">Albums</a>
+                    <a href="/search">Search</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <span class="user-info">Welcome, {{user.name}}!</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </header>
+        
+        <div class="card">
+            <h1>Search Photos</h1>
+            <p style="color: #666; margin-bottom: 25px;">Search by title, description, or tags</p>
+            
+            <form method="GET" action="/search" class="search-form">
+                <input type="text" name="q" value="{{query}}" placeholder="Enter search terms..." class="search-input">
+                <button type="submit" class="btn btn-primary search-btn">Search</button>
+            </form>
+            
+            {{#if searched}}
+                {{#if hasResults}}
+                <h2>Search Results</h2>
+                <p style="color: #666; margin-bottom: 20px;">Found {{results.length}} photo(s) matching "{{query}}"</p>
+                
+                <ul class="search-gallery">
+                    {{#each results}}
+                    <li class="photo-item">
+                        <a href="/photo/{{this.id}}">
+                            <img src="/photos/{{this.filename}}" alt="{{this.title}}" style="max-width: 200px; max-height: 200px;">
+                            {{#if this.title}}
+                            <span class="photo-title">{{this.title}}</span>
+                            {{/if}}
+                            <span class="photo-visibility {{this.visibility}}">{{this.visibility}}</span>
+                        </a>
+                    </li>
+                    {{/each}}
+                </ul>
+                {{else}}
+                <div style="text-align: center; padding: 60px 20px; color: #888;">
+                    <h2 style="color: #999;">No Results Found</h2>
+                    <p>No photos match your search for "{{query}}"</p>
+                    <p style="margin-top: 15px;">Try different keywords or check your spelling.</p>
+                </div>
+                {{/if}}
+            {{else}}
+            <div style="text-align: center; padding: 60px 20px; color: #888;">
+                <p style="font-size: 1.1em;">Enter a search term above to find photos.</p>
+                <p style="margin-top: 10px;">You can search by photo title, description, or tags.</p>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</body>
+</html>
