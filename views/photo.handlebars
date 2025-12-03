@@ -4,53 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{photo.title}} - Digital Media Catalog</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div style="text-align: right; padding: 10px;">
-        Welcome, {{user.name}}! | <a href="/logout">Logout</a>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <a href="/" class="logo">📷 Media Catalog</a>
+                <nav class="nav-links">
+                    <a href="/">Albums</a>
+                    <a href="/search">Search</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <span class="user-info">Welcome, {{user.name}}!</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </header>
+        
+        <div class="card">
+            <a href="/" class="back-link">← Back to Albums</a>
+            
+            <div class="photo-detail">
+                <div class="photo-image-container">
+                    <img src="/photos/{{photo.filename}}" alt="{{photo.title}}">
+                </div>
+                
+                <div class="photo-info">
+                    <h1>{{photo.title}}</h1>
+                    
+                    <div class="photo-meta">
+                        <span class="meta-item {{photo.visibility}}">{{photo.visibility}}</span>
+                        {{#if photo.date}}
+                        <span class="meta-item">{{photo.date}}</span>
+                        {{/if}}
+                    </div>
+                    
+                    {{#if photo.description}}
+                    <h3>Description</h3>
+                    <p style="color: #555; margin-bottom: 20px;">{{photo.description}}</p>
+                    {{/if}}
+                    
+                    {{#if photo.albums.length}}
+                    <h3>Albums</h3>
+                    <p style="color: #555; margin-bottom: 20px;">
+                        {{#each photo.albums}}
+                        <span class="meta-item">{{this}}</span>
+                        {{/each}}
+                    </p>
+                    {{/if}}
+                    
+                    {{#if photo.tags.length}}
+                    <h3>Tags</h3>
+                    <p style="margin-bottom: 20px;">
+                        {{#each photo.tags}}
+                        <span class="meta-item" style="background: #e8f4fd; color: #2980b9;">{{this}}</span>
+                        {{/each}}
+                    </p>
+                    {{/if}}
+                    
+                    {{#if canEdit}}
+                    <div style="margin-top: 30px;">
+                        <a href="/photo/{{photo.id}}/edit" class="btn btn-primary">Edit Photo</a>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+            
+            <div class="comments-section">
+                <h2>Comments</h2>
+                
+                {{#if comments.length}}
+                <ul class="comment-list">
+                    {{#each comments}}
+                    <li class="comment-item">
+                        <div class="comment-header">
+                            <span class="comment-author">{{this.username}}</span>
+                            <span class="comment-date">{{this.createdAt}}</span>
+                        </div>
+                        <p class="comment-text">{{this.text}}</p>
+                    </li>
+                    {{/each}}
+                </ul>
+                {{else}}
+                <p class="no-comments">No comments yet. Be the first to comment!</p>
+                {{/if}}
+                
+                <h3>Add a Comment</h3>
+                <form method="POST" action="/photo/{{photo.id}}/comment">
+                    <div class="form-group">
+                        <textarea name="comment" rows="4" placeholder="Write your comment here..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Post Comment</button>
+                </form>
+            </div>
+        </div>
     </div>
-    
-    <h1>{{photo.title}}</h1>
-    
-    <img src="/photos/{{photo.filename}}" alt="{{photo.title}}" style="max-width: 300px;">
-    
-    <h2>Description</h2>
-    <p>{{photo.description}}</p>
-    
-    <p><strong>Visibility:</strong> {{photo.visibility}}</p>
-    
-    {{#if canEdit}}
-    <p><a href="/photo/{{photo.id}}/edit">Edit</a></p>
-    {{/if}}
-    
-    <hr>
-    
-    <h2>Comments</h2>
-    
-    {{#if comments.length}}
-    <ul>
-        {{#each comments}}
-        <li>
-            <strong>{{this.username}}</strong> said:<br>
-            {{this.text}}
-            <br><small>{{this.createdAt}}</small>
-        </li>
-        {{/each}}
-    </ul>
-    {{else}}
-    <p>No comments yet. Be the first to comment!</p>
-    {{/if}}
-    
-    <h3>Add a Comment</h3>
-    <form method="POST" action="/photo/{{photo.id}}/comment">
-        <p>
-            <textarea name="comment" rows="4" cols="50" placeholder="Write your comment here..." required></textarea>
-        </p>
-        <p>
-            <button type="submit">Post Comment</button>
-        </p>
-    </form>
-    
-    <p><a href="/">Back to Albums</a></p>
 </body>
 </html>

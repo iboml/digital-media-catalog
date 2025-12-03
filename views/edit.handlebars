@@ -4,38 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit {{photo.title}} - Digital Media Catalog</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div style="text-align: right; padding: 10px;">
-        Welcome, {{user.name}}! | <a href="/logout">Logout</a>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <a href="/" class="logo">📷 Media Catalog</a>
+                <nav class="nav-links">
+                    <a href="/">Albums</a>
+                    <a href="/search">Search</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <span class="user-info">Welcome, {{user.name}}!</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </header>
+        
+        <div class="card" style="max-width: 700px; margin: 0 auto;">
+            <a href="/photo/{{photo.id}}" class="back-link">← Back to Photo</a>
+            
+            <h1>Edit Photo</h1>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <img src="/photos/{{photo.filename}}" alt="{{photo.title}}" style="max-width: 300px; max-height: 300px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            </div>
+            
+            <form method="POST" action="/photo/{{photo.id}}/update">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" value="{{photo.title}}" placeholder="Enter photo title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4" placeholder="Enter photo description">{{photo.description}}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="visibility">Visibility</label>
+                    <select id="visibility" name="visibility">
+                        <option value="public" {{#if (eq photo.visibility "public")}}selected{{/if}}>Public - Visible to all logged-in users</option>
+                        <option value="private" {{#if (eq photo.visibility "private")}}selected{{/if}}>Private - Only visible to you</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="/photo/{{photo.id}}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
-    
-    <h1>Edit Photo</h1>
-    
-    <form method="POST" action="/photo/{{photo.id}}/update">
-        <p>
-            <label for="title">Title:</label><br>
-            <input type="text" id="title" name="title" value="{{photo.title}}" size="50">
-        </p>
-        
-        <p>
-            <label for="description">Description:</label><br>
-            <textarea id="description" name="description" rows="4" cols="50">{{photo.description}}</textarea>
-        </p>
-        
-        <p>
-            <label for="visibility">Visibility:</label><br>
-            <select id="visibility" name="visibility">
-                <option value="public" {{#if (eq photo.visibility "public")}}selected{{/if}}>Public</option>
-                <option value="private" {{#if (eq photo.visibility "private")}}selected{{/if}}>Private</option>
-            </select>
-        </p>
-        
-        <p>
-            <button type="submit">Submit</button>
-        </p>
-    </form>
-    
-    <p><a href="/photo/{{photo.id}}">Cancel</a></p>
 </body>
 </html>
+
