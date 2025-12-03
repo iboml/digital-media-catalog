@@ -4,20 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Media Catalog - Albums</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div style="text-align: right; padding: 10px;">
-        Welcome, {{user.name}}! | <a href="/logout">Logout</a>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <a href="/" class="logo">📷 Media Catalog</a>
+                <nav class="nav-links">
+                    <a href="/">Albums</a>
+                    <a href="/search">Search</a>
+                </nav>
+            </div>
+            <div class="header-right">
+                <span class="user-info">Welcome, {{user.name}}!</span>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </header>
+        
+        <div class="card">
+            <h1>Photo Albums</h1>
+            <p style="color: #666; margin-bottom: 25px;">Browse your photo collections</p>
+            
+            <ul class="album-list">
+                {{#each albums}}
+                <li class="album-item">
+                    <a href="/album/{{this.id}}">{{this.name}}</a>
+                    {{#if this.description}}
+                    <p class="album-description">{{this.description}}</p>
+                    {{/if}}
+                </li>
+                {{/each}}
+            </ul>
+            
+            {{#unless albums.length}}
+            <p style="text-align: center; color: #888; padding: 40px;">No albums found.</p>
+            {{/unless}}
+        </div>
     </div>
-    
-    <h1>Photo Album</h1>
-    
-    <ul>
-        {{#each albums}}
-        <li>
-            <a href="/album/{{this.id}}">{{this.name}}</a>
-        </li>
-        {{/each}}
-    </ul>
 </body>
 </html>
