@@ -1,7 +1,7 @@
 // Persistence Layer - MongoDB Database Operations
 const { MongoClient, ObjectId } = require('mongodb');
 
-// MongoDB connection string - REPLACE with your actual connection string
+// MongoDB connection string 
 const MONGODB_URI = 'mongodb+srv://webstudent:UDSTstudent@cluster0.yrtvuxn.mongodb.net/';
 const DATABASE_NAME = 'infs3201_fall2025';
 

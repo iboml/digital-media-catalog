@@ -1,11 +1,9 @@
 // Email Module - Handles email notifications
 // This module provides a sendMail function that can be replaced with a real email system
-// As per project requirements: "You do not need to integrate any email system"
 
 /**
  * Sends an email notification
  * This function logs the email details to the console for demonstration
- * In a production environment, replace the console.log with actual email sending code
  * 
  * Example integration points:
  * - Nodemailer with SMTP server
@@ -29,7 +27,6 @@ function sendMail(to, subject, body) {
     const timestamp = new Date().toISOString();
     
     // Log the email notification to console
-    // In production, replace this section with actual email sending code
     console.log('');
     console.log('╔════════════════════════════════════════════════════════════╗');
     console.log('║                    EMAIL NOTIFICATION                       ║');
