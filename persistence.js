@@ -2,7 +2,7 @@
 const { MongoClient, ObjectId } = require('mongodb');
 
 // MongoDB connection string 
-const MONGODB_URI = 'mongodb+srv://webstudent:UDSTstudent@cluster0.yrtvuxn.mongodb.net/';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/';
 const DATABASE_NAME = 'infs3201_fall2025';
 
 let db = null;
